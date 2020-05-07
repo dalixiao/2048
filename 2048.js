@@ -3,6 +3,7 @@ CANVAS_BACKGROUND_COLOR = "#333333"
 GAME_SIZE = 4
 BLOCK_SIZE = 150
 BLOCK_PLACEHOLDER_COLOR = "red"
+BLOCK_BACKGROUND_COLOR = "655233"
 
 // Global Utility Functions
 randInt = function(a,b){
@@ -48,7 +49,8 @@ class Game{
 }
 //View
 class View{
-   constructor(container){
+   constructor(game,container){
+     this.game = game;
      this.container = container;
      this.initializeContainer();
    }
@@ -64,24 +66,37 @@ class View{
    drawGame(){
      for(let i = 0; i < GAME_SIZE; i++){
        for(let j = 0; j < GAME_SIZE;j++){
-         this.drawBackgroundBlock(i,j);
+         this.drawBackgroundBlock(i,j,BLOCK_PLACEHOLDER_COLOR);
+         if(this.game.data[i][j]){
+           this.drawBlock(i,j,this.game.data[i][j])
+         }
        }
      }
    }
 
-   drawBackgroundBlock(i,j){
+   drawBackgroundBlock(i,j,color){
      let block = document.createElement("div");
      block.style.width = BLOCK_SIZE;
      block.style.height = BLOCK_SIZE;
-     block.style.backgroundColor = BLOCK_PLACEHOLDER_COLOR;
+     block.style.backgroundColor = color;
      block.style.position = "absolute"
      block.style.top = (i+1)*20+i*BLOCK_SIZE;
      block.style.left = (j+1)*  20+j*BLOCK_SIZE;
      this.container.append(block);
+     return block;
+   }
+
+   drawBlock(i,j,number){
+     let span = document.createElement("span");
+     let text = document.createTextNode(number);
+     let block = this.drawBackgroundBlock(i,j,BLOCK_BACKGROUND_COLOR);
+     span.appendChild(text);
+     block.appendChild(span);
+
    }
 }
 //Controller
 var container =  document.getElementById("game-container");
 var game = new Game();
-var view = new View(container);
+var view = new View(game,container);
 view.drawGame();
