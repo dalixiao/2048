@@ -92,7 +92,8 @@ class View{
      let block = this.drawBackgroundBlock(i,j,BLOCK_BACKGROUND_COLOR);
      span.appendChild(text);
      block.appendChild(span);
-
+     span.style.fontSize = 50;
+     span.style.verticalAlign = 'baseline'; 
    }
 }
 //Controller
