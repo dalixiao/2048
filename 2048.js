@@ -92,6 +92,23 @@ class Game{
                 this.shiftBlock(this.data[i],reverse)
             }
         }
+        if(command == "up" || command == "down"){
+
+            for(let i = 0; i< 4; i++){
+                if(command == "down"){
+                    reverse = true;
+                }
+                let arr = [];
+                for(let j = 0; j<4; j++){
+                    arr.push(this.data[j][i]);
+                }
+                this.shiftBlock(arr,reverse);
+                for(let j = 0; j < 4; j++){
+                    this.data[j][i] = arr[j];
+                }
+            }
+        }
+        this.generateNewBlock();
     }
 
 }
@@ -158,6 +175,12 @@ document.onkeydown = function(event){
     }
     else if(event.key == "ArrowRight"){
         game.advance("right");
+    }
+    else if(event.key == "ArrowUp"){
+        game.advance("up");
+    }
+    else if(event.key == "ArrowDown"){
+        game.advance("down");
     }
     view.drawGame();
 }
