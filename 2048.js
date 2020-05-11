@@ -2,10 +2,14 @@ CANVAS_SIZE = 700
 GAME_SIZE = 4
 BLOCK_SIZE = 150
 PADDING_SIZE = (CANVAS_SIZE - GAME_SIZE * BLOCK_SIZE) / 5;
-CANVAS_BACKGROUND_COLOR = "333333"
-BLOCK_PLACEHOLDER_COLOR = "555555"
-BLOCK_BACKGROUND_COLOR = "655233"
+CANVAS_BACKGROUND_COLOR = "D4DfE6"
+BLOCK_PLACEHOLDER_COLOR = "C4CFD6"
+BLOCK_BACKGROUND_COLOR_START = "CADBE9"
+BLOCK_BACKGROUND_COLOR_END = "BEC0E4"
+BLOCK_FONT_COLOR = "444444"
 
+FRAME_PER_SECOND = 30;
+ANIMATION_TIME = 0.15;
 
 // Global Utility Functions
 randInt = function(a,b){
@@ -103,7 +107,7 @@ class Game{
             for(let j = 0; j< 4; j++){
                 let arr = [];
                 for(let i = 0; i<4; i++){
-                    arr.push(this.data[j][i]);
+                    arr.push(this.data[i][j]);
                 }
                 let colMove = this.shiftBlock(arr,reverse);
                 for(let move of colMove){
@@ -125,6 +129,7 @@ class Game{
 class View{
     constructor(game,container){
        this.game = game;
+       this.blocks = [];
        this.container = container;
        this.initializeContainer();
     }
@@ -135,6 +140,9 @@ class View{
        this.container.style.backgroundColor = CANVAS_BACKGROUND_COLOR;
        this.container.style.position = "relative";
        this.container.style.display = "inline-block";
+       this.container.style.borderRadius = "15px";
+       this.container.zIndex = 1;
+       this.container.color = BLOCK_FONT_COLOR;
     }
 
     gridToPosition(i,j){
@@ -142,14 +150,50 @@ class View{
         let left = j*(BLOCK_SIZE + PADDING_SIZE) + PADDING_SIZE;
         return [top,left];
     }
+
+    animate(moves){
+        this.doFrame(moves,0,ANIMATION_TIME);
+    }
+
+    doFrame(moves,currTime,totalTime){
+        if(currTime < totalTime){
+            setTimeout(() => {
+                this.doFrame(moves,currTime + 1/FRAME_PER_SECOND,totalTime);
+            },1/FRAME_PER_SECOND*1000);
+
+            for(let move of moves){
+                let block = this.blocks[[move[0][0]]][move[0][1]];
+                let origin = this.gridToPosition(move[0][0],move[0][1]);
+                let destination = this.gridToPosition(move[1][0],move[1][1]);
+                let currPosition = [
+                    origin[0] + currTime / totalTime *(destination[0]-origin[0]),
+                    origin[1] + currTime / totalTime *(destination[1]-origin[1])
+                ]
+                //console.log(move)
+                block.style.top = currPosition[0];
+                block.style.left = currPosition[1];
+            }
+        }
+        else{
+            view.drawGame();
+        }
+    }
+
     drawGame(){
-       for(let i = 0; i < GAME_SIZE; i++){
+        this.container.innerHTML = "";
+        this.blocks = [];
+        for(let i = 0; i < GAME_SIZE; i++){
+            let temp = [];
            for(let j = 0; j < GAME_SIZE;j++){
                this.drawBackgroundBlock(i,j,BLOCK_PLACEHOLDER_COLOR);
+               let block = null;
                if(this.game.data[i][j]){
-                   this.drawBlock(i,j,this.game.data[i][j])
+                   block = this.drawBlock(i,j,this.game.data[i][j]);
                }
+               temp.push(block);
            }
+           this.blocks.push(temp);
+
        }
     }
 
@@ -161,7 +205,9 @@ class View{
        block.style.backgroundColor = color;
        block.style.position = "absolute"
        block.style.top = position[0];
-       block.style.left = position[1]  ;
+       block.style.left = position[1];
+       block.style.zIndex = 3;
+       block.style.borderRadius = "8px";
        this.container.append(block);
        return block;
     }
@@ -169,13 +215,15 @@ class View{
     drawBlock(i,j,number){
        let span = document.createElement("span");
        let text = document.createTextNode(number);
-       let block = this.drawBackgroundBlock(i,j,BLOCK_BACKGROUND_COLOR);
+       let block = this.drawBackgroundBlock(i,j,BLOCK_BACKGROUND_COLOR_START);
        span.appendChild(text);
        block.appendChild(span);
+       block.style.zIndex= 5;
        span.style.fontSize = 50;
        span.style.position = "absolute";
        span.style.top = (BLOCK_SIZE-span.offsetHeight) / 2;
        span.style.left = (BLOCK_SIZE-span.offsetWidth) / 2;
+       return block;
     }
 }
 //Controller
@@ -185,17 +233,22 @@ var view = new View(game,container);
 view.drawGame();
 
 document.onkeydown = function(event){
+    let moves = null;
     if(event.key=="ArrowLeft"){
-        game.advance("left");
+        moves = game.advance("left");
     }
     else if(event.key == "ArrowRight"){
-        game.advance("right");
+        moves = game.advance("right");
     }
     else if(event.key == "ArrowUp"){
-        game.advance("up");
+        moves = game.advance("up");
     }
     else if(event.key == "ArrowDown"){
-        game.advance("down");
+        moves = game.advance("down");
     }
-    view.drawGame();
+    if(moves.length > 0){
+        console.log(moves);
+        view.animate(moves);
+    }
+
 }
