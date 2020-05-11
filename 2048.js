@@ -1,6 +1,6 @@
 CANVAS_SIZE = 700
 GAME_SIZE = 4
-BLOCK_SIZE = 150 
+BLOCK_SIZE = 150
 PADDING_SIZE = (CANVAS_SIZE - GAME_SIZE * BLOCK_SIZE) / 5;
 CANVAS_BACKGROUND_COLOR = "333333"
 BLOCK_PLACEHOLDER_COLOR = "555555"
@@ -52,6 +52,7 @@ class Game{
         let head = 0;
         let  tail = 1;
         let incr = 1;
+        let moves = [];
         if(reverse == true){
             head = arr.length -1;
             tail = head - 1;
@@ -64,11 +65,13 @@ class Game{
             else{
                 if(arr[head] == null){
                     arr[head] = arr[tail];
+                    moves.push([tail,head]);
                     arr[tail] = null;
                     tail += incr;
                 }
                 else if(arr[head] == arr[tail]){
                     arr[head] = arr[head]*2;
+                    moves.push([tail,head]);
                     arr[tail] = null;
                     head += incr;
                     tail += incr;
@@ -81,30 +84,40 @@ class Game{
                 }
             }
         }
-        return arr;
+        return moves;
     }
 
     advance(command){
         let reverse = command == "right" || command == "down";
+        let moves = [];
         if(command == "left" || command == "right"){
             for(let i = 0; i < 4;  i++){
-                this.shiftBlock(this.data[i],reverse)
+                let rowMove = this.shiftBlock(this.data[i],reverse);
+                for(let move of rowMove){
+                    moves.push([[i,move[0]],[i,move[1]]]);
+                }
             }
         }
         if(command == "up" || command == "down"){
 
-            for(let j = 0; j< 4; i++){  
+            for(let j = 0; j< 4; j++){
                 let arr = [];
-                for(let i = 0; i<4; j++){
+                for(let i = 0; i<4; i++){
                     arr.push(this.data[j][i]);
                 }
-                this.shiftBlock(arr,reverse);
-                for(let i = 0; i < 4; j++){
+                let colMove = this.shiftBlock(arr,reverse);
+                for(let move of colMove){
+                    moves.push([[move[0],j],[move[1],j]]);
+                }
+                for(let i = 0; i < 4; i++){
                     this.data[i][j] = arr[i];
                 }
             }
         }
-        this.generateNewBlock();
+        if(moves.length != 0){
+            this.generateNewBlock();
+        }
+        return moves;
     }
 
 }
