@@ -227,7 +227,7 @@ class View{
     drawBlock(i,j,number){
        let span = document.createElement("span");
        let text = document.createTextNode(number);
-       let block = this.drawBackgroundBlock(i,j,BLOCK_BACKGROUND_COLOR_START);
+       let block = this.drawBackgroundBlock(i,j,this.getColor(number));
        span.appendChild(text);
        block.appendChild(span);
        block.style.zIndex= 5;
@@ -236,6 +236,24 @@ class View{
        span.style.top = (BLOCK_SIZE-span.offsetHeight) / 2;
        span.style.left = (BLOCK_SIZE-span.offsetWidth) / 2;
        return block;
+    }
+
+    getColor(number){
+         let level = Math.log2(number);
+         let rgbStart = this.hexToRGB(BLOCK_BACKGROUND_COLOR_START);
+         let rgbEnd = this.hexToRGB(BLOCK_BACKGROUND_COLOR_END);
+         let color = [0,0,0];
+         for(let i = 0; i < 3; i++){
+             color[i] = Math.floor(rgbStart[i]+(rgbEnd[i]-rgbStart[i])*(level)/12);
+         }
+         return `rgb(${color[0]},${color[1]},${color[2]})`;
+    }
+
+    hexToRGB(s){
+        let rs = s.slice(0,2);
+        let gs = s.slice(2,4);
+        let bs = s.slice(4,6);
+        return [parseInt(rs,16),parseInt(gs,16),parseInt(bs,16)];
     }
 }
 //Controller
@@ -261,7 +279,7 @@ document.onkeydown = function(event){
     }
     if(result && result.moves.length > 0){
         pointsContainer.innerHTML=`Points:${game.points}`;
-        console.log(result.moves);
+        //console.log(result.moves);
         view.animate(result.moves);
     }
 
