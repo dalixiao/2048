@@ -235,7 +235,7 @@ class View{
        span.style.position = "absolute";
        span.style.top = (BLOCK_SIZE-span.offsetHeight) / 2;
        span.style.left = (BLOCK_SIZE-span.offsetWidth) / 2;
-       return block;
+       return block;q
     }
 
     getColor(number){
