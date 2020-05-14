@@ -23,11 +23,13 @@ randChoice = function(arr){
 class Game{
     constructor(){
       this.data = [];
+      this.points = 0;
       this.initializeData();
     }
 
     initializeData(){
       this.data = [];
+      this.points = 0;
       for(let i = 0; i < GAME_SIZE ; i++){
         let temp = []
         for (let j = 0; j < GAME_SIZE; j++){
@@ -54,9 +56,10 @@ class Game{
 
     shiftBlock(arr,reverse = false){
         let head = 0;
-        let  tail = 1;
+        let tail = 1;
         let incr = 1;
         let moves = [];
+        let points = 0;
         if(reverse == true){
             head = arr.length -1;
             tail = head - 1;
@@ -75,6 +78,7 @@ class Game{
                 }
                 else if(arr[head] == arr[tail]){
                     arr[head] = arr[head]*2;
+                    points += arr[head];
                     moves.push([tail,head]);
                     arr[tail] = null;
                     head += incr;
@@ -88,7 +92,10 @@ class Game{
                 }
             }
         }
-        return moves;
+        return{
+            "moves":moves,
+            "points": points
+        }
     }
 
     advance(command){
@@ -96,10 +103,11 @@ class Game{
         let moves = [];
         if(command == "left" || command == "right"){
             for(let i = 0; i < 4;  i++){
-                let rowMove = this.shiftBlock(this.data[i],reverse);
-                for(let move of rowMove){
+                let result = this.shiftBlock(this.data[i],reverse);
+                for(let move of result.moves ){
                     moves.push([[i,move[0]],[i,move[1]]]);
                 }
+                this.points += result.points;
             }
         }
         if(command == "up" || command == "down"){
@@ -109,19 +117,23 @@ class Game{
                 for(let i = 0; i<4; i++){
                     arr.push(this.data[i][j]);
                 }
-                let colMove = this.shiftBlock(arr,reverse);
-                for(let move of colMove){
+                let result = this.shiftBlock(arr,reverse);
+                for(let move of result.moves){
                     moves.push([[move[0],j],[move[1],j]]);
                 }
                 for(let i = 0; i < 4; i++){
                     this.data[i][j] = arr[i];
                 }
+                this.points += result.points;
             }
         }
         if(moves.length != 0){
             this.generateNewBlock();
         }
-        return moves;
+        return {
+            "moves": moves,
+            "points":this.points
+        }
     }
 
 }
@@ -228,27 +240,29 @@ class View{
 }
 //Controller
 var container =  document.getElementById("game-container");
+var pointsContainer = document.getElementById("points");
 var game = new Game();
 var view = new View(game,container);
 view.drawGame();
 
 document.onkeydown = function(event){
-    let moves = null;
+    let result = null;
     if(event.key=="ArrowLeft"){
-        moves = game.advance("left");
+        result = game.advance("left");
     }
     else if(event.key == "ArrowRight"){
-        moves = game.advance("right");
+        result = game.advance("right");
     }
     else if(event.key == "ArrowUp"){
-        moves = game.advance("up");
+        result = game.advance("up");
     }
     else if(event.key == "ArrowDown"){
-        moves = game.advance("down");
+        result = game.advance("down");
     }
-    if(moves.length > 0){
-        console.log(moves);
-        view.animate(moves);
+    if(result && result.moves.length > 0){
+        pointsContainer.innerHTML=`Points:${game.points}`;
+        console.log(result.moves);
+        view.animate(result.moves);
     }
 
 }
